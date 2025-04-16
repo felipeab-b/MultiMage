@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageTk
 import tkinter as tk
 from tkinter import StringVar, messagebox, IntVar, filedialog, ttk
 import os
@@ -11,8 +11,6 @@ def verificar_erros():
     try:
         inicio = numero_inicial.get()
         final = numero_final.get()
-        valorX = eixoX.get()
-        valorY = eixoY.get()
     except tk.TclError:
         messagebox.showerror('Erro', "Valores numéricos inválidos")
         return False
@@ -28,6 +26,31 @@ def selecionar_pasta():
     if pasta:
         gerar_imagem.pasta_destino = pasta
         messagebox.showinfo("Pasta selecionada", f"Imagens serão salvas em: {pasta}")
+
+def mostrar_preview():
+    if not verificar_erros():
+        return
+    
+    valorX = eixoX.get()
+    valorY = eixoY.get()
+    posicao = (valorX,valorY)
+
+    try:
+        fonte_preview = ImageFont.truetype(fonte_escolhida.get(), size = tamanho_fonte.get())
+    except:
+        fonte_preview = fonte
+
+    image_temp = imagem.copy()
+    desenho_temp = ImageDraw.Draw(image_temp)
+
+    texto_preview = f"{texto.get()} 001"
+    desenho_temp.text(posicao,texto_preview, font = fonte_preview, fill = cor_texto.get())
+
+    image_temp.thumbnail((350,350))
+    imagem_tk = ImageTk.PhotoImage(image_temp)
+
+    preview.config(image = imagem_tk)
+    preview.image = imagem_tk
 
 def progress_bar(total):
     janela_progresso = tk.Toplevel(janela)
@@ -56,6 +79,16 @@ def gerar_imagem():
     janela_progresso, progresso, status = progress_bar(total_de_imagens)
 
     try:
+        fonte_atual = ImageFont.truetype('arial.ttf', size = tamanho_fonte.get())
+    except:
+        fonte_atual = fonte
+
+    try:
+        cor_texto_atual = cor_texto.get()
+    except:
+        cor_texto_atual = 'black'
+
+    try:
         for i, num in enumerate(range(inicio,final + 1)):
             progresso['value'] = i + 1
             status.config(text=f"{i+1}/{total_de_imagens} concluído")
@@ -66,7 +99,7 @@ def gerar_imagem():
 
             imagem_temp = imagem.copy()
             desenho_temp = ImageDraw.Draw(imagem_temp)
-            desenho_temp.text(posicao, texto_final, font = fonte, fill = 'black')
+            desenho_temp.text(posicao, texto_final, font = fonte_atual, fill = cor_texto_atual)
 
             caminho = os.path.join(gerar_imagem.pasta_destino, f"imagem_{numero_formatado}.jpg")
             imagem_temp.save(caminho)
@@ -83,7 +116,7 @@ def gerar_imagem():
 
 janela = tk.Tk()
 janela.title("MultiMage")
-janela.geometry("400x500")
+janela.geometry("1025x350")
 
 try:
     imagem = Image.open("fundo_para_testes.jpg")
@@ -99,23 +132,50 @@ numero_inicial = IntVar(value = 1)
 numero_final = IntVar(value = 10)
 eixoX = IntVar(value = 100)
 eixoY = IntVar(value = 100)
+cor_texto = StringVar(value = 'black')
+tamanho_fonte = IntVar(value = 100)
+fontes_disponiveis = ["arial.ttf", "cour.ttf", "time.ttf"]
+fonte_escolhida = StringVar(value = fontes_disponiveis[0])
 
-tk.Label(janela,text = "Texto base:").pack()
-tk.Entry(janela,textvariable = texto,width = 50,bd = 2).pack(padx = 10, pady = 5)
+config_div = tk.LabelFrame(janela, text = 'Configurações', padx = 10, pady = 10)
+config_div.grid(row = 0, column = 0, padx = 20, pady = 20, sticky = 'n')
 
-tk.Label(janela, text = "Número inicial:").pack()
-tk.Entry(janela, textvariable = numero_inicial).pack(pady = 5)
+preview_div = tk.LabelFrame(janela, text = 'Preview', padx = 10, pady = 10)
+preview_div.grid(row = 0, column = 1, padx = 20, pady = 10)
 
-tk.Label(janela, text = "Número Final:").pack()
-tk.Entry(janela, textvariable = numero_final).pack(pady = 5)
+btn_div = tk.Frame(janela)
+btn_div.grid(row = 1, column= 0, columnspan=2, pady = 20)
 
-tk.Label(janela, text = "Posição horizontal (px):").pack()
-tk.Entry(janela, textvariable = eixoX).pack(pady = 5)
+tk.Label(config_div,text = "Texto base:").grid(row = 0, column=0,sticky='w')
+tk.Entry(config_div,textvariable = texto,width = 50,bd = 2).grid(row = 0, column=1)
 
-tk.Label(janela, text = "Posição vertical (px):").pack()
-tk.Entry(janela, textvariable = eixoY).pack(pady = 5)
+tk.Label(config_div, text = "Escolha a cor do texto:").grid(row=1, column=0, sticky="w")
+tk.Entry(config_div, textvariable = cor_texto,).grid(row=1, column=1)
 
-tk.Button(janela,text = 'Selecionar Pasta',command = selecionar_pasta).pack(pady = 20)
-tk.Button(janela,text = 'Gerar Imagem',command = gerar_imagem).pack(pady = 20)
+tk.Label(config_div, text = "Escolha o tamanho da fonte:").grid(row=2, column=0, sticky="w")
+tk.Entry(config_div, textvariable = tamanho_fonte,).grid(row=2, column=1)
+
+tk.Label(config_div, text = "Escolha a fonte:").grid(row=3, column=0, sticky="w")
+ttk.Combobox(config_div, textvariable = fonte_escolhida, values = fontes_disponiveis, state = 'readonly').grid(row=3, column=1)
+
+tk.Label(config_div, text = "Número inicial:").grid(row=4, column=0, sticky="w")
+tk.Entry(config_div, textvariable = numero_inicial).grid(row=4, column=1)
+
+tk.Label(config_div, text = "Número Final:").grid(row=5, column=0, sticky="w")
+tk.Entry(config_div, textvariable = numero_final).grid(row=5, column=1)
+
+tk.Label(config_div, text = "Posição horizontal (px):").grid(row=6, column=0, sticky="w")
+tk.Entry(config_div, textvariable = eixoX).grid(row=6, column=1)
+
+tk.Label(config_div, text = "Posição vertical (px):").grid(row=7, column=0, sticky="w")
+tk.Entry(config_div, textvariable = eixoY).grid(row=7, column=1)
+
+preview = tk.Label(preview_div)
+preview.pack()
+
+tk.Button(btn_div,text = 'Selecionar Pasta',command = selecionar_pasta).grid(row=0, column=0, padx=10)
+tk.Button(btn_div,text = 'Visualizar Preview', command = mostrar_preview).grid(row=0, column=1, padx=10)
+tk.Button(btn_div,text = 'Gerar Imagem',command = gerar_imagem).grid(row=0, column=2, padx=10)
+
 
 janela.mainloop()
