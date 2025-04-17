@@ -3,21 +3,74 @@ import tkinter as tk
 from tkinter import StringVar, messagebox, IntVar, filedialog, ttk
 import os
 
-def verificar_erros():
-    if not texto.get():
-        messagebox.showinfo('Erro', "Por favor, insira um texto válido")
-        return False
+imagem_base = None
+posicao_inicial_arraste = None
+imagem_tk = None
 
-    try:
-        inicio = numero_inicial.get()
-        final = numero_final.get()
-    except tk.TclError:
-        messagebox.showerror('Erro', "Valores numéricos inválidos")
-        return False
+def iniciar_arraste(event):
+    global posicao_inicial_arraste
+    posicao_inicial_arraste = (eixoX.get(), eixoY.get(), event.x, event.y)
+
+def mover_texto(event):
+    global posicao_inicial_arraste
     
-    if inicio > final:
-        messagebox.showerror('Erro', "Número inicial maior que o final")
-        return False
+    if posicao_inicial_arraste:
+        orig_x, orig_y, start_x, start_y = posicao_inicial_arraste
+        delta_x = event.x - start_x
+        delta_y = event.y - start_y
+        
+        eixoX.set(orig_x + delta_x)
+        eixoY.set(orig_y + delta_y)
+
+        mostrar_preview()
+
+def finalizar_arraste(event=None):
+    global posicao_inicial_arraste
+    posicao_inicial_arraste = None
+    mostrar_preview()
+
+def configurar_scroll(event):
+    preview.bind("<MouseWheel>", alterar_tamanho_fonte)
+
+def alterar_tamanho_fonte(event):
+        if not event.state & 0x0004:
+            return
+        
+        scroll_direction = event.delta
+
+        change = 1 if scroll_direction > 0 else -1
+
+        current_size = tamanho_fonte.get()
+        new_size = current_size + (5 * change)
+        new_size = max(10, min(200, new_size))
+
+        tamanho_fonte.set(new_size)
+
+        mostrar_preview()
+
+try:
+    fonte = ImageFont.truetype("arial.ttf", size=100)
+except:
+    fonte = ImageFont.load_default()
+
+def verificar_erros(ignorar_erro=None):
+    if ignorar_erro != 'texto_vazio':
+        if not texto.get():
+            messagebox.showinfo('Erro', "Por favor, insira um texto válido")
+            return False
+
+    if ignorar_erro != 'valores_numericos':
+        try:
+            inicio = numero_inicial.get()
+            final = numero_final.get()
+        except tk.TclError:
+            messagebox.showerror('Erro', "Valores numéricos inválidos")
+            return False
+    
+    if ignorar_erro != 'intervalo_invalido':
+        if inicio > final:
+            messagebox.showerror('Erro', "Número inicial maior que o final")
+            return False
     
     return True 
 
@@ -27,8 +80,8 @@ def selecionar_pasta():
         gerar_imagem.pasta_destino = pasta
         messagebox.showinfo("Pasta selecionada", f"Imagens serão salvas em: {pasta}")
 
-def mostrar_preview():
-    if not verificar_erros():
+def mostrar_preview(event = None):
+    if not verificar_erros('texto_vazio'):
         return
     
     valorX = eixoX.get()
@@ -40,17 +93,33 @@ def mostrar_preview():
     except:
         fonte_preview = fonte
 
-    image_temp = imagem.copy()
+    if imagem_base is None:
+        messagebox.showwarning("Aviso", "Nenhuma imagem foi selecionada ainda.")
+        return
+
+    image_temp = imagem_base.copy()
     desenho_temp = ImageDraw.Draw(image_temp)
 
     texto_preview = f"{texto.get()} 001"
     desenho_temp.text(posicao,texto_preview, font = fonte_preview, fill = cor_texto.get())
 
     image_temp.thumbnail((350,350))
+    global imagem_tk
     imagem_tk = ImageTk.PhotoImage(image_temp)
 
     preview.config(image = imagem_tk)
     preview.image = imagem_tk
+
+def selecionar_imagem():
+    global imagem_base
+    caminho = filedialog.askopenfilename(title="Selecione a imagem base", filetypes=[("Imagens", "*.jpg;*.png;*.jpeg;*.bmp")])
+    if caminho:
+        try:
+            imagem_base = Image.open(caminho)
+            mostrar_preview()
+            messagebox.showinfo('Imagem selecionada', "Imagem carregada com sucesso!")
+        except Exception as e:
+            messagebox.showerror('Erro', f"Erro ao abrir imagem: {str(e)}")
 
 def progress_bar(total):
     janela_progresso = tk.Toplevel(janela)
@@ -97,7 +166,11 @@ def gerar_imagem():
             numero_formatado = str(num).zfill(3)
             texto_final = f"{texto.get()} {numero_formatado}"
 
-            imagem_temp = imagem.copy()
+            if imagem_base is None:
+                messagebox.showwarning('Aviso',"Nenhuma imagem foi selecionada ainda.")
+                return
+
+            imagem_temp = imagem_base.copy()
             desenho_temp = ImageDraw.Draw(imagem_temp)
             desenho_temp.text(posicao, texto_final, font = fonte_atual, fill = cor_texto_atual)
 
@@ -117,15 +190,6 @@ def gerar_imagem():
 janela = tk.Tk()
 janela.title("MultiMage")
 janela.geometry("1025x350")
-
-try:
-    imagem = Image.open("fundo_para_testes.jpg")
-    desenho = ImageDraw.Draw(imagem)
-    fonte = ImageFont.truetype("arial.ttf", size = 200)
-except Exception as e:
-    messagebox.showerror('Erro', f"Falha ao carregar recursos: {str(e)}")
-    janela.destroy()
-    exit()
 
 texto = StringVar()
 numero_inicial = IntVar(value = 1)
@@ -173,9 +237,14 @@ tk.Entry(config_div, textvariable = eixoY).grid(row=7, column=1)
 preview = tk.Label(preview_div)
 preview.pack()
 
-tk.Button(btn_div,text = 'Selecionar Pasta',command = selecionar_pasta).grid(row=0, column=0, padx=10)
+tk.Button(btn_div,text = 'Selecionar Imagem', command = selecionar_imagem).grid(row=0, column=0, padx=10)
 tk.Button(btn_div,text = 'Visualizar Preview', command = mostrar_preview).grid(row=0, column=1, padx=10)
-tk.Button(btn_div,text = 'Gerar Imagem',command = gerar_imagem).grid(row=0, column=2, padx=10)
+tk.Button(btn_div,text = 'Selecionar Pasta',command = selecionar_pasta).grid(row=0, column=2, padx=10)
+tk.Button(btn_div,text = 'Gerar Imagem',command = gerar_imagem).grid(row=0, column=3, padx=10)
 
+preview.bind("<Button-1>", iniciar_arraste)
+preview.bind("<B1-Motion>",mover_texto)
+preview.bind("<ButtonRelease-1>",finalizar_arraste)
+preview.bind("<Enter>", configurar_scroll)
 
 janela.mainloop()
