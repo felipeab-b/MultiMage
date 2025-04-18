@@ -218,5 +218,13 @@ def load_and_place_image(image_name,size,pos,bg_color="#864cbc"):
         label.place(x=pos[0], y=pos[1])
         return label
 
+def animacao_mensagem(label, texto, delay=50):
+    def escrever(i=0):
+        if i < len(texto):
+            label.config(text=label.cget("text") + texto[i])
+            label.after(delay, escrever, i + 1)
+    label.config(text="")
+    escrever()
+
 def fechar_hub():
     hub.destroy()

@@ -1,21 +1,31 @@
 import tkinter as tk
 import core
-from core import load_and_place_image, fechar_hub
+from core import load_and_place_image, animacao_mensagem
 from ui_1 import criar_janela
 
 def criar_hub():
     hub = tk.Tk()
-    hub.title("MultiMage")
-    hub.geometry("1025x800")
-    hub.config(bg = "#fbf1e2")
+    hub.title("MultiMage - Início")
+    hub.geometry("600x500")
+    hub.config(bg="#6050DC")
 
     core.hub = hub
 
-    img1 = load_and_place_image("arte-corpo-inteiro.png", (750, 750), (365, 141)).config(bg = '#fbf1e2')
-    img2 = load_and_place_image("name.png", (400, 400), (50, 0)).config(bd = 0)
+    load_and_place_image("arte-corpo-inteiro.png", (430, 430), (170, 106)).config(bg = '#6050DC')
 
-    tk.Button(hub, text = 'Mutiplicar Imagens Numeradas', command = criar_janela, padx=20, pady=20).place(x=150,y=400)
-    tk.Button(hub, text = 'Certificados, Diplomas e Documentos', padx=20, pady=20).place(x=130,y=500)
-    tk.Button(hub, text = 'Sair', command = fechar_hub, padx=20, pady=20).place(x=210,y=600)
+    texto = tk.Label(hub, text="", font=("Arial", 14), fg="white", bg="#6050DC", wraplength=500, justify="center")
+    texto.pack(pady=10)
+
+    mensagem = "Olá, jovem feiticeiro! Sou o MultiMage, seu assistente mágico para criar imagens encantadas em série. Vamos começar?"
+
+    def mostrar_botoes():
+        btn_iniciar = tk.Button(hub, text="Criar Imagens Numeradas", font=("Arial", 12, "bold"),bg="white", fg="#6050DC", command=criar_janela)
+        btn_iniciar.pack(pady=10)
+
+        btn_sair = tk.Button(hub, text="Sair", font=("Arial", 12),bg="white", fg="#6050DC", command=hub.destroy)
+        btn_sair.pack(pady=5)
+
+    animacao_mensagem(texto, mensagem, delay = 30)
+    texto.after(len(mensagem) * 40 + 500, mostrar_botoes)
 
     hub.mainloop()
