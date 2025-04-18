@@ -9,6 +9,9 @@ COLOR_LIGHT_BG = "#F4F2FF"
 COLOR_DARK_TEXT = "#2D2A4A"
 
 def criar_janela():
+
+    fechar_hub()
+
     janela = tk.Tk()
     janela.title("MultiMage")
     janela.geometry("1025x350")
@@ -73,7 +76,5 @@ def criar_janela():
     core.preview.bind("<B1-Motion>", core.mover_texto)
     core.preview.bind("<ButtonRelease-1>", core.finalizar_arraste)
     core.preview.bind("<Enter>", core.configurar_scroll)
-
-    fechar_hub()
 
     janela.mainloop()

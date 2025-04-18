@@ -95,6 +95,8 @@ def selecionar_pasta():
         messagebox.showinfo("Pasta selecionada", f"Imagens serão salvas em: {pasta}")
 
 def mostrar_preview(event = None):
+    global imagem_tk
+
     if not verificar_erros('texto_vazio'):
         return
     
@@ -118,7 +120,6 @@ def mostrar_preview(event = None):
     desenho_temp.text(posicao,texto_preview, font = fonte_preview, fill = cor_texto.get())
 
     image_temp.thumbnail((350,350))
-    global imagem_tk
     imagem_tk = ImageTk.PhotoImage(image_temp)
 
     preview.config(image = imagem_tk)
@@ -126,7 +127,9 @@ def mostrar_preview(event = None):
 
 def selecionar_imagem():
     global imagem_base
+
     caminho = filedialog.askopenfilename(title="Selecione a imagem base", filetypes=[("Imagens", "*.jpg;*.png;*.jpeg;*.bmp")])
+    
     if caminho:
         try:
             imagem_base = Image.open(caminho)
