@@ -1,4 +1,4 @@
-from ui import criar_janela
+from ui_hub import criar_hub
 
 if __name__ == "__main__":
-    criar_janela()
+    criar_hub()

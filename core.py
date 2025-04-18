@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageTk
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 import os
+from pathlib import Path
 
 imagem_base = None
 posicao_inicial_arraste = None
@@ -18,6 +19,7 @@ fontes_disponiveis = None
 fonte_escolhida = None
 preview = None
 janela = None
+hub = None
 
 def iniciar_arraste(event):
     global posicao_inicial_arraste
@@ -201,3 +203,17 @@ def gerar_imagem():
         if 'e' not in locals() or isinstance(e, (PermissionError, Exception)):
             messagebox.showinfo('Sucesso', f"{total_de_imagens} imagens geradas com sucesso!")
         janela.destroy()
+
+def load_and_place_image(image_name,size,pos,bg_color="#864cbc"):
+        image_path = Path("assets") / image_name
+        img = Image.open(image_path)
+        img = img.resize(size, Image.LANCZOS)
+        tk_img = ImageTk.PhotoImage(img)
+        
+        label = tk.Label(hub, image=tk_img, bg=bg_color)
+        label.image = tk_img  # Mantém referência
+        label.place(x=pos[0], y=pos[1])
+        return label
+
+def fechar_hub():
+    hub.destroy()
