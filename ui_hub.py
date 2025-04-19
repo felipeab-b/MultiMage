@@ -7,6 +7,7 @@ def criar_hub():
     hub = tk.Tk()
     hub.title("MultiMage - Início")
     hub.geometry("600x500")
+    hub.resizable(width=False, height=False)
     hub.config(bg="#6050DC")
 
     core.hub = hub

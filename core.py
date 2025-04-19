@@ -125,6 +125,8 @@ def mostrar_preview(event = None):
     preview.config(image = imagem_tk)
     preview.image = imagem_tk
 
+    return image_temp
+
 def selecionar_imagem():
     global imagem_base
 
@@ -133,7 +135,14 @@ def selecionar_imagem():
     if caminho:
         try:
             imagem_base = Image.open(caminho)
-            mostrar_preview()
+            image_temp = mostrar_preview()
+
+            largura, altura = image_temp.size
+            new_largura = largura + 700
+            new_altura = altura + 150
+            janela.geometry(f"{new_largura}x{new_altura}")
+            janela.resizable(width=False, height=False)   
+             
             messagebox.showinfo('Imagem selecionada', "Imagem carregada com sucesso!")
         except Exception as e:
             messagebox.showerror('Erro', f"Erro ao abrir imagem: {str(e)}")
