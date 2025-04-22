@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import StringVar, IntVar, ttk
+from tkinter import StringVar, IntVar, ttk, BooleanVar
 from core import fechar_hub
 import core
 
@@ -20,14 +20,14 @@ def criar_janela():
     core.janela = janela
 
     core.texto = StringVar()
-    core.numero_inicial = IntVar(value = 1)
-    core.numero_final = IntVar(value = 10)
+    core.numero_de_copias = IntVar(value = 1)
     core.eixoX = IntVar(value = 100)
     core.eixoY = IntVar(value = 100)
     core.cor_texto = StringVar(value = 'black')
     core.tamanho_fonte = IntVar(value = 100)
     core.fontes_disponiveis = ["arial.ttf", "cour.ttf", "time.ttf"]
     core.fonte_escolhida = StringVar(value = core.fontes_disponiveis[0])
+    core.mostrar_numeraçao = BooleanVar(value=True)
 
     config_div = tk.LabelFrame(janela, text = 'Configurações', padx = 10, pady = 10, bg=COLOR_LIGHT_BG, fg=COLOR_PRIMARY)
     config_div.grid(row = 0, column = 0, padx = 20, pady = 20, sticky = 'n')
@@ -50,17 +50,17 @@ def criar_janela():
     tk.Label(config_div, text = "Escolha a fonte:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=3, column=0, sticky="w")
     ttk.Combobox(config_div, textvariable = core.fonte_escolhida, values = core.fontes_disponiveis, state = 'readonly').grid(row=3, column=1)
 
-    tk.Label(config_div, text = "Número inicial:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=4, column=0, sticky="w")
-    tk.Entry(config_div, textvariable = core.numero_inicial, bg='white', fg=COLOR_DARK_TEXT).grid(row=4, column=1)
+    tk.Label(config_div, text = "Número de cópias:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=4, column=0, sticky="w")
+    tk.Entry(config_div, textvariable = core.numero_de_copias, bg='white', fg=COLOR_DARK_TEXT).grid(row=4, column=1)
 
-    tk.Label(config_div, text = "Número Final:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=5, column=0, sticky="w")
-    tk.Entry(config_div, textvariable = core.numero_final, bg='white', fg=COLOR_DARK_TEXT).grid(row=5, column=1)
+    tk.Label(config_div, text = "Posição horizontal (px):", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=5, column=0, sticky="w")
+    tk.Entry(config_div, textvariable = core.eixoX, bg='white', fg=COLOR_DARK_TEXT).grid(row=5, column=1)
 
-    tk.Label(config_div, text = "Posição horizontal (px):", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=6, column=0, sticky="w")
-    tk.Entry(config_div, textvariable = core.eixoX, bg='white', fg=COLOR_DARK_TEXT).grid(row=6, column=1)
+    tk.Label(config_div, text = "Posição vertical (px):", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=6, column=0, sticky="w")
+    tk.Entry(config_div, textvariable = core.eixoY, bg='white', fg=COLOR_DARK_TEXT).grid(row=6, column=1)
 
-    tk.Label(config_div, text = "Posição vertical (px):", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=7, column=0, sticky="w")
-    tk.Entry(config_div, textvariable = core.eixoY, bg='white', fg=COLOR_DARK_TEXT).grid(row=7, column=1)
+    tk.Label(config_div, text = "Mostrar numeração:",bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=7, column=0, sticky="w")
+    tk.Checkbutton(config_div, variable= core.mostrar_numeraçao).grid(row=7, column=1, sticky="w")
 
     core.preview = tk.Label(preview_div, bg = 'white')
     core.preview.pack()

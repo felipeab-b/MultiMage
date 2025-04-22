@@ -9,8 +9,7 @@ posicao_inicial_arraste = None
 imagem_tk = None
 
 texto = None
-numero_inicial = None
-numero_final = None
+numero_de_copias = None
 eixoX = None
 eixoY = None
 cor_texto = None
@@ -20,6 +19,7 @@ fonte_escolhida = None
 preview = None
 janela = None
 hub = None
+mostrar_numeraçao = None
 
 def iniciar_arraste(event):
     global posicao_inicial_arraste
@@ -75,15 +75,9 @@ def verificar_erros(ignorar_erro=None):
 
     if ignorar_erro != 'valores_numericos':
         try:
-            inicio = numero_inicial.get()
-            final = numero_final.get()
+            copias = numero_de_copias.get()
         except tk.TclError:
             messagebox.showerror('Erro', "Valores numéricos inválidos")
-            return False
-    
-    if ignorar_erro != 'intervalo_invalido':
-        if inicio > final:
-            messagebox.showerror('Erro', "Número inicial maior que o final")
             return False
     
     return True 
@@ -116,7 +110,10 @@ def mostrar_preview(event = None):
     image_temp = imagem_base.copy()
     desenho_temp = ImageDraw.Draw(image_temp)
 
-    texto_preview = f"{texto.get()} 001"
+    if mostrar_numeraçao.get():
+        texto_preview = f"{texto.get()} 001"
+    else:
+        texto_preview = f"{texto.get()}"
     desenho_temp.text(posicao,texto_preview, font = fonte_preview, fill = cor_texto.get())
 
     image_temp.thumbnail((350,350))
@@ -164,12 +161,11 @@ def gerar_imagem():
     if not verificar_erros():
         return
     
-    inicio = numero_inicial.get()
-    final = numero_final.get()
+    copias = numero_de_copias.get()
     valorX = eixoX.get()
     valorY = eixoY.get()
     posicao = (valorX,valorY)
-    total_de_imagens = final - inicio + 1
+    total_de_imagens = copias
 
     janela_progresso, progresso, status = progress_bar(total_de_imagens)
 
@@ -184,13 +180,16 @@ def gerar_imagem():
         cor_texto_atual = 'black'
 
     try:
-        for i, num in enumerate(range(inicio,final + 1)):
+        for i, num in enumerate(range(copias)):
             progresso['value'] = i + 1
             status.config(text=f"{i+1}/{total_de_imagens} concluído")
             janela_progresso.update()
 
             numero_formatado = str(num).zfill(3)
-            texto_final = f"{texto.get()} {numero_formatado}"
+            if mostrar_numeraçao.get():
+                texto_final = f"{texto.get()} {numero_formatado}"
+            else:
+                texto_final = f"{texto.get()}"
 
             if imagem_base is None:
                 messagebox.showwarning('Aviso',"Nenhuma imagem foi selecionada ainda.")
