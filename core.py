@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont, ImageTk
 import tkinter as tk
-from tkinter import messagebox, filedialog, ttk
+from tkinter import messagebox, filedialog, ttk,StringVar,IntVar,BooleanVar,Entry,Label,Checkbutton
 import os
 from pathlib import Path
 
@@ -20,6 +20,68 @@ preview = None
 janela = None
 hub = None
 mostrar_numeraçao = None
+
+class BlocoTexto:
+    def __init__(self,texto,x,y,cor,tamanho,fonte,numerado):
+        self.texto = texto
+        self.x = x
+        self.y = y
+        self.cor = cor
+        self.tamanho = tamanho
+        self.fonte = fonte
+        self.numerado = numerado
+
+bloco_de_texto = []
+
+def botao_texto():
+    botao_texto = tk.Toplevel(janela)
+    botao_texto.title("Adicionar texto")
+    botao_texto.geometry("350x350")
+    botao_texto.resizable(width=False, height=False)
+
+    texto_var = StringVar()
+    x_var = IntVar(value=100)
+    y_var = IntVar(value=100)
+    cor_var = StringVar(value="black")
+    tamanho_var = IntVar(value=100)
+    fontes = ["arial.ttf", "cour.ttf", "times.ttf"]
+    fonte_var = StringVar(value=fontes[0])
+    numerado_var = BooleanVar(value=False)
+
+    Label(botao_texto, text="Texto:").pack()
+    Entry(botao_texto, textvariable=texto_var).pack()
+
+    Label(botao_texto, text="Posição X:").pack()
+    Entry(botao_texto, textvariable=x_var).pack()
+
+    Label(botao_texto, text="Posição Y:").pack()
+    Entry(botao_texto, textvariable=y_var).pack()
+
+    Label(botao_texto, text="Cor do texto:").pack()
+    Entry(botao_texto, textvariable=cor_var).pack()
+
+    Label(botao_texto, text="Tamanho da fonte:").pack()
+    Entry(botao_texto, textvariable=tamanho_var).pack()
+
+    Label(botao_texto, text="Fonte:").pack()
+    ttk.Combobox(botao_texto, textvariable=fonte_var, values=fontes, state="readonly").pack()
+
+    Checkbutton(botao_texto, text="Incluir numeração", variable=numerado_var).pack(pady=10)
+
+    def adicionar_bloco():
+        bloco = BlocoTexto(
+            texto=texto_var.get(),
+            x=x_var.get(),
+            y=y_var.get(),
+            cor=cor_var.get(),
+            tamanho=tamanho_var.get(),
+            fonte=fonte_var.get(),
+            numerado=numerado_var.get()
+        )
+        bloco_de_texto.append(bloco)
+        botao_texto.destroy()
+
+    tk.Button(botao_texto, text="Adicionar Bloco", command=adicionar_bloco).pack(pady=20)
 
 def iniciar_arraste(event):
     global posicao_inicial_arraste

@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import StringVar, IntVar, ttk, BooleanVar
-from core import fechar_hub
+from core import fechar_hub, botao_texto
 import core
 
 COLOR_PRIMARY = "#6050DC"
@@ -16,6 +16,7 @@ def criar_janela():
     janela.title("MultiMage")
     janela.geometry("1025x350")
     janela.config(bg = COLOR_LIGHT_BG)
+    janela.resizable(width=False, height=False)
 
     core.janela = janela
 
@@ -38,29 +39,10 @@ def criar_janela():
     btn_div = tk.Frame(janela, bg=COLOR_LIGHT_BG)
     btn_div.grid(row = 1, column= 0, columnspan=2, pady = 20)
 
-    tk.Label(config_div,text = "Texto base:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row = 0, column=0,sticky='w')
-    tk.Entry(config_div,textvariable = core.texto,width = 50,bd = 2, bg='white', fg=COLOR_DARK_TEXT).grid(row = 0, column=1)
+    tk.Button(config_div,text = "Adicionar texto !", command= botao_texto ).grid(row = 0, column=0)
 
-    tk.Label(config_div, text = "Escolha a cor do texto:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=1, column=0, sticky="w")
-    tk.Entry(config_div, textvariable = core.cor_texto, bg='white', fg=COLOR_DARK_TEXT).grid(row=1, column=1)
-
-    tk.Label(config_div, text = "Escolha o tamanho da fonte:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=2, column=0, sticky="w")
-    tk.Entry(config_div, textvariable = core.tamanho_fonte, bg='white', fg=COLOR_DARK_TEXT).grid(row=2, column=1)
-
-    tk.Label(config_div, text = "Escolha a fonte:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=3, column=0, sticky="w")
-    ttk.Combobox(config_div, textvariable = core.fonte_escolhida, values = core.fontes_disponiveis, state = 'readonly').grid(row=3, column=1)
-
-    tk.Label(config_div, text = "Número de cópias:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=4, column=0, sticky="w")
+    tk.Label(config_div, text = "Número de cópias:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=4, column=0, sticky="w", pady=10)
     tk.Entry(config_div, textvariable = core.numero_de_copias, bg='white', fg=COLOR_DARK_TEXT).grid(row=4, column=1)
-
-    tk.Label(config_div, text = "Posição horizontal (px):", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=5, column=0, sticky="w")
-    tk.Entry(config_div, textvariable = core.eixoX, bg='white', fg=COLOR_DARK_TEXT).grid(row=5, column=1)
-
-    tk.Label(config_div, text = "Posição vertical (px):", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=6, column=0, sticky="w")
-    tk.Entry(config_div, textvariable = core.eixoY, bg='white', fg=COLOR_DARK_TEXT).grid(row=6, column=1)
-
-    tk.Label(config_div, text = "Mostrar numeração:",bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=7, column=0, sticky="w")
-    tk.Checkbutton(config_div, variable= core.mostrar_numeraçao).grid(row=7, column=1, sticky="w")
 
     core.preview = tk.Label(preview_div, bg = 'white')
     core.preview.pack()

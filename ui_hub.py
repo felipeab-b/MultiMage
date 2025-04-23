@@ -26,7 +26,7 @@ def criar_hub():
         btn_sair = tk.Button(hub, text="Sair", font=("Arial", 12),bg="white", fg="#6050DC", command=hub.destroy)
         btn_sair.pack(pady=5)
 
-    animacao_mensagem(texto, mensagem, delay = 30)
-    texto.after(len(mensagem) * 40 + 500, mostrar_botoes)
+    animacao_mensagem(texto, mensagem, delay = 3) #30
+    texto.after(len(mensagem) * 4 + 5, mostrar_botoes) #4 + 5
 
     hub.mainloop()
