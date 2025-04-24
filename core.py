@@ -84,43 +84,41 @@ def botao_texto():
     tk.Button(botao_texto, text="Adicionar Bloco", command=adicionar_bloco).pack(pady=20)
 
 def iniciar_arraste(event):
-    global posicao_inicial_arraste
-    posicao_inicial_arraste = (eixoX.get(), eixoY.get(), event.x, event.y)
+    global posicao_clique
+    posicao_clique = (event.x, event.y)
 
 def mover_texto(event):
-    global posicao_inicial_arraste
+    global posicao_clique
     
-    if posicao_inicial_arraste:
-        orig_x, orig_y, start_x, start_y = posicao_inicial_arraste
-        delta_x = event.x - start_x
-        delta_y = event.y - start_y
-        
-        eixoX.set(orig_x + delta_x)
-        eixoY.set(orig_y + delta_y)
+    if posicao_clique and bloco_de_texto:
+        delta_x = int((event.x - posicao_clique[0]) * preview.escala_x)
+        delta_y = int((event.y - posicao_clique[1]) * preview.escala_y)
 
+        bloco = bloco_de_texto[-1]
+        bloco.x += delta_x
+        bloco.y += delta_y
+
+        posicao_clique = (event.x, event.y)
         mostrar_preview()
 
 def finalizar_arraste(event=None):
-    global posicao_inicial_arraste
-    posicao_inicial_arraste = None
+    global posicao_clique
+    posicao_clique = None
     mostrar_preview()
 
 def configurar_scroll(event):
     preview.bind("<MouseWheel>", alterar_tamanho_fonte)
 
 def alterar_tamanho_fonte(event):
-        if not event.state & 0x0004:
+    if event.state & 0x0004 and bloco_de_texto:  
+        bloco = bloco_de_texto[-1]
+        try:
+            if event.delta > 0 and bloco.tamanho < 500:
+                bloco.tamanho += 5
+            elif event.delta < 0 and bloco.tamanho > 5:
+                bloco.tamanho -= 5
+        except AttributeError:
             return
-        
-        scroll_direction = event.delta
-
-        change = 1 if scroll_direction > 0 else -1
-
-        current_size = tamanho_fonte.get()
-        new_size = current_size + (5 * change)
-        new_size = max(10, min(500, new_size))
-
-        tamanho_fonte.set(new_size)
 
         mostrar_preview()
 
@@ -155,15 +153,6 @@ def mostrar_preview(event = None):
 
     if not verificar_erros('texto_vazio'):
         return
-    
-    valorX = eixoX.get()
-    valorY = eixoY.get()
-    posicao = (valorX,valorY)
-
-    try:
-        fonte_preview = ImageFont.truetype(fonte_escolhida.get(), size = tamanho_fonte.get())
-    except:
-        fonte_preview = fonte
 
     if imagem_base is None:
         messagebox.showwarning("Aviso", "Nenhuma imagem foi selecionada ainda.")
@@ -172,14 +161,27 @@ def mostrar_preview(event = None):
     image_temp = imagem_base.copy()
     desenho_temp = ImageDraw.Draw(image_temp)
 
-    if mostrar_numeraçao.get():
-        texto_preview = f"{texto.get()} 001"
-    else:
-        texto_preview = f"{texto.get()}"
-    desenho_temp.text(posicao,texto_preview, font = fonte_preview, fill = cor_texto.get())
+    for bloco in bloco_de_texto:
+        try:
+            fonte_bloco = ImageFont.truetype(bloco.fonte, size = bloco.tamanho)
+        except:
+            fonte_bloco = fonte
+
+        texto_render = bloco.texto
+        if bloco.numerado:
+            texto_render += "001"
+
+        desenho_temp.text((bloco.x, bloco.y), texto_render, font = fonte_bloco, fill = bloco.cor)
 
     image_temp.thumbnail((350,350))
     imagem_tk = ImageTk.PhotoImage(image_temp)
+
+    largura_original, altura_original = imagem_base.size
+    largura_preview, altura_preview = image_temp.size
+    escala_x = largura_original / largura_preview
+    escala_y = altura_original / altura_preview
+    preview.escala_x = escala_x
+    preview.escala_y = escala_y
 
     preview.config(image = imagem_tk)
     preview.image = imagem_tk
@@ -224,34 +226,15 @@ def gerar_imagem():
         return
     
     copias = numero_de_copias.get()
-    valorX = eixoX.get()
-    valorY = eixoY.get()
-    posicao = (valorX,valorY)
     total_de_imagens = copias
 
     janela_progresso, progresso, status = progress_bar(total_de_imagens)
 
     try:
-        fonte_atual = ImageFont.truetype('arial.ttf', size = tamanho_fonte.get())
-    except:
-        fonte_atual = fonte
-
-    try:
-        cor_texto_atual = cor_texto.get()
-    except:
-        cor_texto_atual = 'black'
-
-    try:
-        for i, num in enumerate(range(copias)):
+        for i in enumerate(range(copias)):
             progresso['value'] = i + 1
             status.config(text=f"{i+1}/{total_de_imagens} concluído")
             janela_progresso.update()
-
-            numero_formatado = str(num).zfill(3)
-            if mostrar_numeraçao.get():
-                texto_final = f"{texto.get()} {numero_formatado}"
-            else:
-                texto_final = f"{texto.get()}"
 
             if imagem_base is None:
                 messagebox.showwarning('Aviso',"Nenhuma imagem foi selecionada ainda.")
@@ -259,12 +242,22 @@ def gerar_imagem():
 
             imagem_temp = imagem_base.copy()
             desenho_temp = ImageDraw.Draw(imagem_temp)
-            desenho_temp.text(posicao, texto_final, font = fonte_atual, fill = cor_texto_atual)
+            for bloco in bloco_de_texto:
+                try:
+                    fonte_bloco = ImageFont.truetype(bloco.fonte, bloco.tamanho)
+                except:
+                    fonte_bloco = fonte
+
+                texto_render = bloco.texto
+                if bloco.numerado:
+                    texto_render += f" {str(i).zfill(3)}"
+
+                desenho_temp.text((bloco.x, bloco.y), texto_render, font=fonte_bloco, fill=bloco.cor)
 
             if imagem_temp.mode == 'RGBA':
                 imagem_temp = imagem_temp.convert('RGB')
 
-            caminho = os.path.join(gerar_imagem.pasta_destino, f"imagem_{numero_formatado}.jpg")
+            caminho = os.path.join(gerar_imagem.pasta_destino, f"imagem_{str(i).zfill(3)}.jpg")
             imagem_temp.save(caminho)
         
     except PermissionError:
