@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import StringVar, IntVar, ttk, BooleanVar
-from core import fechar_hub, botao_texto, remover_bloco
+from core import fechar_hub, botao_texto, remover_bloco, editar_bloco
 import core
 
 COLOR_PRIMARY = "#6050DC"
@@ -39,7 +39,7 @@ def criar_janela():
     btn_div = tk.Frame(janela, bg=COLOR_LIGHT_BG)
     btn_div.grid(row = 1, column= 0, columnspan=2, pady = 20)
 
-    tk.Button(config_div,text = "Adicionar texto !", command= botao_texto ).grid(row = 0, column=0)
+    tk.Button(config_div,text = "Adicionar texto !", command=botao_texto ).grid(row = 0, column=0)
 
     tk.Label(config_div, text = "Número de cópias:", bg=COLOR_LIGHT_BG, fg=COLOR_DARK_TEXT).grid(row=4, column=0, sticky="w", pady=10)
     tk.Entry(config_div, textvariable = core.numero_de_copias, bg='white', fg=COLOR_DARK_TEXT).grid(row=4, column=1)
@@ -60,6 +60,7 @@ def criar_janela():
     core.preview.bind("<Control-MouseWheel>", core.alterar_tamanho_fonte) #Windows
     core.preview.bind("<Control-Button-4>", core.alterar_tamanho_fonte) #Linux Scroll up
     core.preview.bind("<Control-Button-5>", core.alterar_tamanho_fonte) #Linux Scroll down
+    core.preview.bind("<Double-Button-1>", core.editar_bloco)
     
     janela.bind("<BackSpace>", core.remover_bloco)
 

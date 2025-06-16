@@ -23,7 +23,7 @@ mostrar_numeraçao = None
 bloco_de_texto_select = None
 
 class BlocoTexto:
-    def __init__(self,texto,x,y,cor,tamanho,fonte,numerado):
+    def __init__(self,texto,x,y,cor,tamanho,fonte,numerado,preview_num=1, zfill=3):
         self.texto = texto
         self.x = x
         self.y = y
@@ -31,23 +31,47 @@ class BlocoTexto:
         self.tamanho = tamanho
         self.fonte = fonte
         self.numerado = numerado
+        self.preview_num = preview_num
+        self.zfill = zfill
 
 bloco_de_texto = []
 
 def botao_texto(bloco_editar=None):
     botao_texto = tk.Toplevel(janela)
     botao_texto.title("Adicionar texto" if bloco_editar is None else "Editar ")
-    botao_texto.geometry("350x450")
+    botao_texto.geometry("350x520")
     botao_texto.resizable(width=False, height=False)
 
     texto_var = StringVar()
-    x_var = IntVar(value=100)
-    y_var = IntVar(value=100)
-    cor_var = StringVar(value="black")
-    tamanho_var = IntVar(value=100)
+    x_var = IntVar()
+    y_var = IntVar()
+    cor_var = StringVar()
+    tamanho_var = IntVar()
     fontes = ["arial.ttf", "cour.ttf", "times.ttf"]
-    fonte_var = StringVar(value=fontes[0])
-    numerado_var = BooleanVar(value=False)
+    fonte_var = StringVar()
+    numerado_var = BooleanVar()
+    preview_num_var = IntVar()
+    zfill_var = IntVar()
+
+    if bloco_editar:
+        texto_var.set(bloco_editar.texto)
+        x_var.set(bloco_editar.x)
+        y_var.set(bloco_editar.y)
+        cor_var.set(bloco_editar.cor)
+        tamanho_var.set(bloco_editar.tamanho)
+        fonte_var.set(bloco_editar.fonte)
+        numerado_var.set(bloco_editar.numerado)
+        preview_num_var.set(bloco_editar.preview_num)
+        zfill_var.set(bloco_editar.zfill)
+    else:
+        x_var.set(100)
+        y_var.set(100)
+        cor_var.set("black")
+        tamanho_var.set(100)
+        fonte_var.set(fontes[0])
+        numerado_var.set(False)
+        preview_num_var.set(1)
+        zfill_var.set(3)
 
     Label(botao_texto, text="Texto:").pack()
     Entry(botao_texto, textvariable=texto_var).pack()
@@ -88,21 +112,47 @@ def botao_texto(bloco_editar=None):
 
     Checkbutton(botao_texto, text="Incluir numeração", variable=numerado_var).pack(pady=10)
 
-    def adicionar_bloco():
-        bloco = BlocoTexto(
-            texto=texto_var.get(),
-            x=x_var.get(),
-            y=y_var.get(),
-            cor=cor_var.get(),
-            tamanho=tamanho_var.get(),
-            fonte=fonte_var.get(),
-            numerado=numerado_var.get()
-        )
-        bloco_de_texto.append(bloco)
+    num_preview_frame = tk.Frame(botao_texto)
+    num_preview_frame.pack(pady = 5)
+
+    Label(num_preview_frame, text="Número de preview:").pack(side=tk.LEFT,padx=5)
+    Entry(num_preview_frame, textvariable=preview_num_var, width=5).pack(side=tk.LEFT)
+
+    Label(num_preview_frame, text="Casas decimais:").pack(side=tk.LEFT, padx=5)
+    Entry(num_preview_frame, textvariable=zfill_var, width=5).pack(side=tk.LEFT)
+
+    preview_num_var.trace_add("write", lambda *args: mostrar_preview())
+    zfill_var.trace_add("write", lambda *args: mostrar_preview())
+
+    def salvar_bloco():
+        if bloco_editar:
+            bloco_editar.texto = texto_var.get()
+            bloco_editar.x = x_var.get()
+            bloco_editar.y = y_var.get()
+            bloco_editar.cor = cor_var.get()
+            bloco_editar.tamanho = tamanho_var.get()
+            bloco_editar.fonte = fonte_var.get()
+            bloco_editar.numerado = numerado_var.get()
+            bloco_editar.preview_num = preview_num_var.get()
+            bloco_editar.zfill = zfill_var.get()
+        else:
+            bloco = BlocoTexto(
+                texto=texto_var.get(),
+                x=x_var.get(),
+                y=y_var.get(),
+                cor=cor_var.get(),
+                tamanho=tamanho_var.get(),
+                fonte=fonte_var.get(),
+                numerado=numerado_var.get(),
+                preview_num=preview_num_var.get(),
+                zfill=zfill_var.get()
+            )
+            bloco_de_texto.append(bloco)
+
         botao_texto.destroy()
         mostrar_preview()
 
-    tk.Button(botao_texto, text="Adicionar Bloco", command=adicionar_bloco).pack(pady=20)
+    tk.Button(botao_texto, text="Salvar Bloco" if bloco_editar else "Adicionar Bloco", command=salvar_bloco).pack(pady=20)
 
 def iniciar_arraste(event):
     global posicao_clique, bloco_de_texto_select
@@ -216,7 +266,20 @@ def mostrar_preview(event = None):
 
         texto_render = bloco.texto
         if bloco.numerado:
-            texto_render += "001"
+            num_format = 3
+            if bloco == bloco_de_texto_select:
+                try:
+                    num_preview = bloco.preview_num
+                    num_format = bloco.zfill
+                except AttributeError:
+                    num_preview = 1
+            else:
+                num_preview = 1
+
+            if not isinstance(num_format, int) or num_format < 0:
+                num_format = 3
+            
+            texto_render += f"{str(num_preview).zfill(num_format)}"
 
         desenho_temp.text((bloco.x, bloco.y), texto_render, font = fonte_bloco, fill = bloco.cor)
 
@@ -294,15 +357,22 @@ def gerar_imagem():
 
             imagem_temp = imagem_base.copy()
             desenho_temp = ImageDraw.Draw(imagem_temp)
+
             for bloco in bloco_de_texto:
-                try:
-                    fonte_bloco = ImageFont.truetype(bloco.fonte, bloco.tamanho)
-                except:
-                    fonte_bloco = get_font(bloco.fonte, bloco.tamanho)
+                
+                fonte_bloco = get_font(bloco.fonte, bloco.tamanho)
 
                 texto_render = bloco.texto
                 if bloco.numerado:
-                    texto_render += f" {str(i).zfill(3)}"
+                    try:
+                        num_zfill = bloco.zfill_count
+                    except AttributeError:
+                        num_zfill = 3 
+                    
+                    if not isinstance(num_zfill, int) or num_zfill < 0:
+                        num_zfill = 3
+
+                    texto_render += f" {str(i + 1).zfill(num_zfill)}"
 
                 desenho_temp.text((bloco.x, bloco.y), texto_render, font=fonte_bloco, fill=bloco.cor)
 
@@ -385,6 +455,14 @@ def remover_bloco(event=None):
         messagebox.showinfo("Removido", "Texto removido com sucesso!")
     else:
         messagebox.showinfo("Nenhum texto selecionado", "Por favor selecione um bloco de texto para remoção")
+
+def editar_bloco(event=None):
+    global bloco_de_texto_select
+    
+    if bloco_de_texto_select:
+        botao_texto(bloco_editar=bloco_de_texto_select)
+    else:
+        messagebox.showinfo("Nenhum bloco selecionado", "Selecione algum bloco de texto para editar")
 
 def abrir_seletor_de_cores(cor_var_destino):
     cor_codigo = colorchooser.askcolor(title="Selecione a cor do texto")
