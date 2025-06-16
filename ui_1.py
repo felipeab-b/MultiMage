@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import StringVar, IntVar, ttk, BooleanVar
-from core import fechar_hub, botao_texto
+from core import fechar_hub, botao_texto, remover_bloco
 import core
 
 COLOR_PRIMARY = "#6050DC"
@@ -57,6 +57,10 @@ def criar_janela():
     core.preview.bind("<Button-1>", core.iniciar_arraste)
     core.preview.bind("<B1-Motion>", core.mover_texto)
     core.preview.bind("<ButtonRelease-1>", core.finalizar_arraste)
-    core.preview.bind("<Enter>", core.configurar_scroll)
+    core.preview.bind("<Control-MouseWheel>", core.alterar_tamanho_fonte) #Windows
+    core.preview.bind("<Control-Button-4>", core.alterar_tamanho_fonte) #Linux Scroll up
+    core.preview.bind("<Control-Button-5>", core.alterar_tamanho_fonte) #Linux Scroll down
+    
+    janela.bind("<BackSpace>", core.remover_bloco)
 
     janela.mainloop()
