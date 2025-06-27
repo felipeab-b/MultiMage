@@ -365,7 +365,7 @@ def gerar_imagem():
                 texto_render = bloco.texto
                 if bloco.numerado:
                     try:
-                        num_zfill = bloco.zfill_count
+                        num_zfill = bloco.zfill
                     except AttributeError:
                         num_zfill = 3 
                     
